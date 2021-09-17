@@ -4,31 +4,60 @@ import axios from 'axios'
 const createStore = () => {
   return new Vuex.Store({
     state: {
-      launchData: {},
+      launchData: [],
       rockets: {},
       currentFilter: {
         filterType: '',
         filterValue: ''
       },
-      offset: 10
+      offset: 0,
+      noMoreLaunches: false
     },
     mutations: {
-      setData(state, data) {
-        state.launchData = data
-        state.offset = 10
-      },
       addData(state, data) {
-        data.forEach(element => {
-          state.launchData.push(element)
+        if (data.length == 0){
+          state.noMoreLaunches = true
+        } else {
+          state.noMoreLaunches = false
+        }
+        data.forEach(launch => {
+          var timestamp = launch.launch_date_unix
+          var date = new Date(timestamp*1000);
+
+          launch.launch_date = date.getDate().toLocaleString('en-US', {
+                  minimumIntegerDigits: 2,
+                  useGrouping: false
+                })+
+              "/"+(date.getMonth()+1).toLocaleString('en-US', {
+                    minimumIntegerDigits: 2,
+                    useGrouping: false
+                  })+
+              "/"+date.getFullYear()
+            
+            launch.launch_time = date.getHours().toLocaleString('en-US', {
+                    minimumIntegerDigits: 2,
+                    useGrouping: false
+                  })+
+              ":"+date.getMinutes().toLocaleString('en-US', {
+                  minimumIntegerDigits: 2,
+                  useGrouping: false
+                })+
+              ":"+date.getSeconds().toLocaleString('en-US', {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+            })
+
+          state.launchData.push(launch)
           state.offset += 1
         }); 
+        
       },
       addRocket(state, data) {
         state.rockets[data.id] = data
       },
       setCurrentFilter(state, filter) {
         state.currentFilter = filter
-      } 
+      }
     },
     actions: {
       nuxtServerInit(vuexContext, context) {
@@ -67,7 +96,8 @@ const createStore = () => {
             }
           })
           .then(res => {
-              vuexContext.commit('setData', res.data.data.launchesPast)
+              vuexContext.state.offset = 0
+              vuexContext.commit('addData', res.data.data.launchesPast)
           })
           .catch(e => context.error(e))
       },
@@ -147,7 +177,9 @@ const createStore = () => {
         }
       })
       .then(res => {
-        vuexContext.commit('setData', res.data.data.launchesPast)
+        vuexContext.state.launchData = []
+        vuexContext.state.offset = 0
+        vuexContext.commit('addData', res.data.data.launchesPast)
         vuexContext.commit('setCurrentFilter', payload)
       })
       .catch(e => context.error(e))

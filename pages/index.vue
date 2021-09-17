@@ -1,22 +1,30 @@
 <template>
   <div class="container">
     <filter-cards class="filter" />
-    <div class="flex-row cards-row">
-        <div class="timeline"></div>
+    <div class="cards-row">
           <base-card v-for="launch in launchData" :key="launch.id">     
-              <mission-info 
-                :missionName="launch.mission_name"
-                :launchDate="launch.launch_date_unix"
-                :rocket="launch.rocket"
-                :launchSite="launch.launch_site.site_name_long"
-                :links="launch.links"
-                @flipCard="flipCard"
-              />
+            <template v-slot:card>
+                <mission-info 
+                  :missionName="launch.mission_name"
+                  :launchDate="launch.launch_date"
+                  :launchTime="launch.launch_time"
+                  :rocket="launch.rocket"
+                  :launchSite="launch.launch_site.site_name_long"
+                  :links="launch.links"
+                  @flipCard="flipCard"
+                />
+            </template>
+            <template v-slot:date>
+              <h3 class="date">{{ launch.launch_date }}</h3>
+            </template>
           </base-card>
           <base-card id="end-card">
+          <template v-slot:card>
             <div class="end-btn" @click="loadMore">
-              <h1>Load More</h1>
+              <h1 v-if="launchesAvailable">Load More</h1>
+              <h1 v-else>No Data Available</h1>
             </div>
+          </template>
           </base-card>
       </div>
   </div>
@@ -37,6 +45,9 @@ export default {
   computed: {
     launchData() {
       return this.$store.state.launchData
+    },
+    launchesAvailable() {
+      return !this.$store.state.noMoreLaunches
     }
   },
   methods: {
@@ -56,19 +67,13 @@ export default {
 .cards-row {
   height: 100vh;
   min-height: 750px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .filter {
   z-index: 1;
-}
-
-.timeline {
-  content: '';
-  height: 6px;
-  width: 100%;
-  background-color: white;
-  position: fixed;
-  margin-top: 655px;
 }
 
 .flip-card-enter-from,
@@ -101,6 +106,10 @@ export default {
 .end-btn:hover {
   color:black;
   cursor: pointer;
+}
+
+.date {
+  color: white;
 }
 
 @media (max-width: 400px) {

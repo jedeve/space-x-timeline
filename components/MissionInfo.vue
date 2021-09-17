@@ -5,7 +5,7 @@
         <i class="fas fa-rocket fa-2x rocket-image" @click="flipCard"></i>
         <div>
           <h1 class="title">{{ missionName }}</h1>
-          <p>{{ missionDate }}</p>
+          <p>{{ launchDate + " " + launchTime}}</p>
         </div>
       </header>
       
@@ -97,6 +97,7 @@ export default {
   props: [
     'missionName',
     'launchDate',
+    'launchTime',
     'launchSite',
     'links',
     'rocket',
@@ -107,32 +108,6 @@ export default {
     }
   },
   computed: {
-    missionDate() {
-      var timestamp = this.launchDate
-      var date = new Date(timestamp*1000);
-
-      return date.getDate().toLocaleString('en-US', {
-              minimumIntegerDigits: 2,
-              useGrouping: false
-            })+
-          "/"+(date.getMonth()+1).toLocaleString('en-US', {
-                minimumIntegerDigits: 2,
-                useGrouping: false
-              })+
-          "/"+date.getFullYear()+
-          " "+date.getHours().toLocaleString('en-US', {
-                minimumIntegerDigits: 2,
-                useGrouping: false
-              })+
-          ":"+date.getMinutes().toLocaleString('en-US', {
-              minimumIntegerDigits: 2,
-              useGrouping: false
-            })+
-          ":"+date.getSeconds().toLocaleString('en-US', {
-            minimumIntegerDigits: 2,
-            useGrouping: false
-          })
-    },
     payloads(){
       return this.rocket.second_stage.payloads
     },
